@@ -33,8 +33,12 @@ void add_vector(const double *a, const double *b, double *out)
 static inline
 void subtract_vector(const double *a, const double *b, double *out)
 {
-    for (int i = 0; i < 3; i++)
-        out[i] = a[i] - b[i];
+	__m256d A = _mm256_set_pd( a[0], a[1], a[2], 0.0 );
+	__m256d B = _mm256_set_pd( b[0], b[1], b[2], 0.0 );
+	__m256d A_sub_B = _mm256_sub_pd( A, B );
+	out[0] = A_sub_B[3];
+	out[1] = A_sub_B[2];
+	out[2] = A_sub_B[1];
 }
 
 static inline
