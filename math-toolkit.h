@@ -33,23 +33,15 @@ void add_vector(const double *a, const double *b, double *out)
 static inline
 void subtract_vector(const double *a, const double *b, double *out)
 {
-	__m256d A = _mm256_set_pd( a[0], a[1], a[2], 0.0 );
-	__m256d B = _mm256_set_pd( b[0], b[1], b[2], 0.0 );
-	__m256d A_sub_B = _mm256_sub_pd( A, B );
-	out[0] = A_sub_B[3];
-	out[1] = A_sub_B[2];
-	out[2] = A_sub_B[1];
+    for (int i = 0; i < 3; i++)
+        out[i] = a[i] - b[i];
 }
 
 static inline
 void multiply_vectors(const double *a, const double *b, double *out)
 {
-	__m256d A = _mm256_set_pd( a[0], a[1], a[2], 0.0 );
-	__m256d B = _mm256_set_pd( b[0], b[1], b[2], 0.0 );
-	__m256d A_mul_B = _mm256_mul_pd( A, B );
-	out[0] = A_mul_B[3];
-	out[1] = A_mul_B[2];
-	out[2] = A_mul_B[1];
+    for (int i = 0; i < 3; i++)
+        out[i] = a[i] * b[i];
 }
 
 static inline
@@ -62,9 +54,22 @@ void multiply_vector(const double *a, double b, double *out)
 static inline
 void cross_product(const double *v1, const double *v2, double *out)
 {
-    out[0] = v1[1] * v2[2] - v1[2] * v2[1];
+/*   
+	out[0] = v1[1] * v2[2] - v1[2] * v2[1];
     out[1] = v1[2] * v2[0] - v1[0] * v2[2];
     out[2] = v1[0] * v2[1] - v1[1] * v2[0];
+*/	
+	__m256d a1 = _mm256_set_pd( v1[2], v1[1], v1[0], 0.0 );
+	__m256d a2 = _mm256_set_pd( v1[2], v1[0], v1[1], 0.0 );
+	__m256d b1 = _mm256_set_pd( v2[2], v2[1], v2[0], 0.0 );	
+	__m256d b2 = _mm256_set_pd( v2[2], v2[0], v2[1], 0.0 );	
+
+	__m256d cross_result = _mm256_sub_pd(
+						  _mm256_mul_pd(_mm256_shuffle_pd(a1, a1, 6), _mm256_shuffle_pd(b2, b2, 10)), 
+				 		  _mm256_mul_pd(_mm256_shuffle_pd(a2, a2, 10), _mm256_shuffle_pd(b1, b1, 6)));
+	out[0] = cross_result[3];
+	out[1] = cross_result[2];
+	out[2] = cross_result[1];
 }
 
 static inline
