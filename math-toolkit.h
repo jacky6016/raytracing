@@ -9,7 +9,17 @@
 static inline
 void normalize(double *v)
 {
-    double d = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+/*	
+	__m256d V  = _mm256_set_pd( v[0], v[1], v[2], 0.0 );
+	double d = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    assert(d != 0.0 && "Error calculating normal");
+	__m256d D = _mm256_set1_pd(d);
+	__m256d result = _mm256_div_pd(V, D);
+	v[0] = result[3];
+	v[1] = result[2];
+	v[2] = result[1];
+*/
+	double d = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
     assert(d != 0.0 && "Error calculating normal");
 
     v[0] /= d;
@@ -26,29 +36,33 @@ double length(const double *v)
 static inline
 void add_vector(const double *a, const double *b, double *out)
 {
-    for (int i = 0; i < 3; i++)
-        out[i] = a[i] + b[i];
+	out[0] = a[0] + b[0];
+	out[1] = a[1] + b[1];
+	out[2] = a[2] + b[2];
 }
 
 static inline
 void subtract_vector(const double *a, const double *b, double *out)
 {
-    for (int i = 0; i < 3; i++)
-        out[i] = a[i] - b[i];
+	out[0] = a[0] - b[0];
+	out[1] = a[1] - b[1];
+	out[2] = a[2] - b[2];
 }
 
 static inline
 void multiply_vectors(const double *a, const double *b, double *out)
 {
-    for (int i = 0; i < 3; i++)
-        out[i] = a[i] * b[i];
+	out[0] = a[0] * b[0];
+	out[1] = a[1] * b[1];
+	out[2] = a[2] * b[2];
 }
 
 static inline
 void multiply_vector(const double *a, double b, double *out)
 {
-    for (int i = 0; i < 3; i++)
-        out[i] = a[i] * b;
+	out[0] = a[0] * b;
+	out[1] = a[1] * b;
+	out[2] = a[2] * b;
 }
 
 static inline
@@ -93,9 +107,26 @@ void scalar_triple_product(const double *u, const double *v, const double *w,
 static inline
 double scalar_triple(const double *u, const double *v, const double *w)
 {
-    double tmp[3];
+/*
+	__m256d V  = _mm256_set_pd( v[0], v[1], v[2], 0.0 );
+	__m256d W1 = _mm256_set_pd( w[2], w[1], w[0], 0.0 );
+	__m256d W2 = _mm256_set_pd( w[2], w[0], w[1], 0.0 );
+	__m256d U1 = _mm256_set_pd( u[2], u[1], u[0], 0.0 );	
+	__m256d U2 = _mm256_set_pd( u[2], u[0], u[1], 0.0 );	
+   
+	__m256d cross_result = _mm256_sub_pd(
+						  _mm256_mul_pd(_mm256_shuffle_pd(W1, W1, 6), _mm256_shuffle_pd(U2, U2, 10)), 
+				 		  _mm256_mul_pd(_mm256_shuffle_pd(W2, W2, 10), _mm256_shuffle_pd(U1, U1, 6)));
+
+	__m256d mul_result = _mm256_mul_pd( V, cross_result );
+	__m256d out = _mm256_hadd_pd(mul_result, mul_result);
+	return out[0];
+*/	
+	
+	double tmp[3];
     cross_product(w, u, tmp);
     return dot_product(v, tmp);
+
 }
 
 #endif
